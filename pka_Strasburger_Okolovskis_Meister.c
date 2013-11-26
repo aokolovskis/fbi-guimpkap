@@ -263,18 +263,65 @@ uint32_t test_ecc_b163()
 
  /*
  * FUNCTION
+ * Initializes the given array A with zeros
  *
  * INPUT
- *
+ *	t length of the Arrays
+ *	array A
+ * 
  * OUTPUT
  *
  * DESCRIPTION/REMARKS
  *
  */
- void poly_quad(uint32_t *A, uint32_t *B, uint32_t *C)
+void initZero(uint32_t t, uint32_t *A)
+{
+     int i;
+     for(i = 0; i <= t - 1; i++)
+     {
+          A[i] = 0;       
+     }     
+}
+
+ /*
+ * FUNCTION
+ * Calculates the square of an polynomial
+ *
+ * INPUT
+ *	t length of the Arrays
+ *	array A
+ *  array B 
+ * OUTPUT
+ *
+ * DESCRIPTION/REMARKS
+ *
+ */
+ void poly_square(uint32_t t, uint32_t *A, uint32_t *B)
  {
-	//TODO
- }
+      // Precomputation of lookup table T
+      uint32_t T[t*4];
+      initZero(t*4, T);
+      int i;
+      for(i	= 0; i <= t - 1; i++)
+      {
+            int y;
+            for(y = 0; y < 4; y++)
+            {
+                 uint32_t temp = A[i] >> (8*y);
+                 int shiftMask = 1;
+                 int z;
+                 for(z = 0; z < 8 ; z++)
+                 {
+                       T[y+i] |= (temp & shiftMask) << z;                 
+                       shiftMask = shiftMask << 1;
+                 }
+            }
+      }
+      
+      uint32_t B[t*2];
+      initZero(t*2, B);   
+      // TODO 
+}
 
 
 /* 
@@ -283,7 +330,10 @@ uint32_t test_ecc_b163()
  */
 int main(void)
 {
-  srand(1);
-  printf("\ntest_ecc_b163: %d\n",test_ecc_b163());
+  //srand(1);
+  uint32_t a[1] = {0xE1F3cd03};
+  uint32_t b[1];
+  poly_square(1, a, b);
+//  printf("\ntest_ecc_b163: %d\n",test_ecc_b163());
   return 0;
 }
