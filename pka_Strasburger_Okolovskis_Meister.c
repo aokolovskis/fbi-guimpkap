@@ -305,20 +305,22 @@ void initZero(uint32_t t, uint32_t *A)
       for(i	= 0; i <= t - 1; i++)
       {
             int y;
+            uint32_t temp = A[i];
             for(y = 0; y < 4; y++)
             {
-                 uint32_t temp = A[i] >> (8*y);
-                 int shiftMask = 1;
-                 int z;
-                 for(z = 0; z < 8 ; z++)
-                 {
-                       T[y+i] |= (temp & shiftMask) << z;                 
-                       shiftMask = shiftMask << 1;
-                 }
+                  if(y > 0)
+                       temp = temp >> 8;
+                  int shiftMask = 1;
+                  int z;
+                  for(z = 0; z < 8 ; z++)
+                  {
+                        T[y+i] |= (temp & shiftMask) << z;                 
+                        shiftMask = shiftMask << 1;
+                  }
             }
       }
       
-      uint32_t B[t*2];
+      B[t*2];
       initZero(t*2, B);   
       // TODO 
 }
