@@ -276,8 +276,8 @@ uint32_t test_ecc_b163()
  */
 void initZero(uint32_t t, uint32_t *A)
 {
-     int i;
-     for(i = 0; i <= t - 1; i++)
+     uint32_t i;
+     for(i = 0; i < t; i++)
      {
           A[i] = 0;       
      }     
@@ -298,31 +298,33 @@ void initZero(uint32_t t, uint32_t *A)
  */
  void poly_square(uint32_t t, uint32_t *A, uint32_t *B)
  {
-      // Precomputation of lookup table T
-      uint32_t T[t*4];
-      initZero(t*4, T);
-      int i;
-      for(i	= 0; i <= t - 1; i++)
-      {
-            int y;
-            uint32_t temp = A[i];
-            for(y = 0; y < 4; y++)
-            {
-                  if(y > 0)
-                       temp = temp >> 8;
-                  int shiftMask = 1;
-                  int z;
-                  for(z = 0; z < 8 ; z++)
-                  {
-                        T[y+i] |= (temp & shiftMask) << z;                 
-                        shiftMask = shiftMask << 1;
-                  }
-            }
-      }
-      
-      B[t*2];
-      initZero(t*2, B);   
-      // TODO 
+	// Precomputation of lookup table T
+	uint32_t T[256];
+	initZero(256, T);
+	int i;
+	for(i = 0; i <= 255; i++)
+	{
+		int z;
+		int shiftMask = 1;
+		for(z = 0; z < 8; z++)
+		{
+			T[i] |= (i & shiftMask) << z;                 
+			shiftMask = shiftMask << 1;
+		}		
+	}
+     // squaring
+	int mask = 0xFF;
+	uint32_t y;
+	for(y = 0; y < t; y++)
+	{
+		int b0 = A[y] & mask;
+		int b1 = (A[y] >> 8) & mask;
+		int b2 = (A[y] >> 16) & mask;		
+		int b3 = (A[y] >> 24) & mask;
+		
+		B[2*y] = T[b1] | T[b0];
+		B[2*y + 1] = T[b3] | T[b2];
+	}
 }
 
 
@@ -333,8 +335,8 @@ void initZero(uint32_t t, uint32_t *A)
 int main(void)
 {
   //srand(1);
-  uint32_t a[1] = {0xE1F3cd03};
-  uint32_t b[1];
+  uint32_t a[1] = {0xE1F3CD03};
+  uint32_t b[2] = {0,0};
   poly_square(1, a, b);
 //  printf("\ntest_ecc_b163: %d\n",test_ecc_b163());
   return 0;
