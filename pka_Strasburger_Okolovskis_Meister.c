@@ -106,6 +106,23 @@ uint32_t f2m_is_equal(
   return 1;
 }
 
+/* 
+ * FUNCTION 
+ *   Creates of copy of a polynomial
+ *
+ * INPUT
+ *   + length t of all arrays
+ *   + array A 
+ *   + array B
+ */
+void copy(uint32_t t, uint32_t *A, uint32_t *B)
+{	
+	uint32_t i;
+	for(i = 0; i < t; i++)
+	{
+		B[i] = A[i];
+	}
+}
 
 /*
  * FUNCTION
@@ -263,24 +280,72 @@ uint32_t test_ecc_b163()
 
  /*
  * FUNCTION
- * Initializes the given array A with zeros
+ * Initializes the given array A with value 0
  *
  * INPUT
- *	t length of the Arrays
+ *	t length of the Array
  *	array A
- * 
- * OUTPUT
- *
- * DESCRIPTION/REMARKS
- *
  */
 void initZero(uint32_t t, uint32_t *A)
 {
-     uint32_t i;
-     for(i = 0; i < t; i++)
-     {
-          A[i] = 0;       
-     }     
+	uint32_t i;
+	for(i = 0; i < t; i++)
+	{
+		A[i] = 0;       
+	}     
+}
+
+ /*
+ * FUNCTION
+ * Initializes the given array A with value 1
+ *
+ * INPUT
+ *	t length of the Array
+ *	array A
+ */
+void initOne(uint32_t t, uint32_t *A)
+{
+	A[0] = 1;
+	uint32_t i;
+	for(i = 1; i < t; i++)
+	{
+		A[i] = 0;       
+	}     	 
+}
+
+ /*
+ * FUNCTION
+ * Determines the degree of the given polynomial
+ *
+ * INPUT
+ *	t length of the Array
+ *	array A
+ *  
+ * OUTPUT
+ * degree of polynomial A
+ */
+uint32_t getDegree(uint32_t t, uint32_t *A)
+{
+	uint32_t i;
+	for(i = t - 1; i >= 0; i--)
+	{
+		if(A[i] == 0)
+		{
+			continue;
+		}
+		
+		uint32_t y;
+		uint32_t shiftMask = 0x80000000;
+		for(y = 31; y >= 0; y--)
+		{
+			if(A[i] & shiftMask)
+			{
+				return y + (i*32);
+			}
+			
+			shiftMask >>= 1;
+		}		
+	}
 }
 
  /*
@@ -327,6 +392,59 @@ void initZero(uint32_t t, uint32_t *A)
 	}
 }
 
+ /*
+ * FUNCTION
+ * Calculates the multiplicative inverse of polynomial A
+ *
+ * INPUT
+ *	t length of the Arrays
+ *	array A 
+ *  array F
+ *  array I
+ *
+ */
+void poly_calculateInverse(uint32_t t, uint32_t *A, uint32_t *F, uint32_t *I)
+{
+	uint32_t u[t], v[t], g1[t], g2[t], one[t];
+
+	copy(t, A, u);	
+	copy(t, F, v);
+	initOne(t, g1);	
+	initZero(t, g2);	
+	initOne(t, one);
+	
+	while(!f2m_is_equal(t, u, one) && !f2m_is_equal(t, v, one))
+	{
+		// u is divisible by z, if its lowest power is zero
+		while(u[0] & 1 == 0)
+		{
+			// TODO
+		}
+		
+		while(v[0] & 1 == 0)
+		{
+			// TODO
+		}
+		
+		if(getDegree(t, u) > getDegree(t, v))
+		{
+			// TODO
+		}
+		else
+		{
+			// TODO
+		}
+	}
+	
+	if(f2m_is_equal(t, u, one))
+	{
+		copy(t, g1, I);
+	}
+	else
+	{
+		copy(t, g2, I);
+	}
+}
 
 /* 
  * FUNCTION
@@ -335,9 +453,11 @@ void initZero(uint32_t t, uint32_t *A)
 int main(void)
 {
   //srand(1);
-  uint32_t a[1] = {0xE1F3CD03};
-  uint32_t b[2] = {0,0};
-  poly_square(1, a, b);
+  uint32_t a[6] = {0x0, 0x0, 0x0, 0x0, 0x0, 0xE1F3CD03};
+  uint32_t b[6] = {0x0, 0x0, 0x0, 0x0, 0x0, 0xE1F3CD03};
+  uint32_t i[6];
+//  poly_calculateInverse(6, a, b, i);
+//  poly_square(6, a, b);
 //  printf("\ntest_ecc_b163: %d\n",test_ecc_b163());
   return 0;
 }
