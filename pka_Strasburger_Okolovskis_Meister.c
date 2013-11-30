@@ -326,25 +326,28 @@ void initOne(uint32_t t, uint32_t *A)
  */
 uint32_t getDegree(uint32_t t, uint32_t *A)
 {
-	uint32_t i, y, shiftMask;
+	int i, y;
+  uint32_t shiftMask;
 	for(i = t - 1; i >= 0; i--)
 	{
 		if(A[i] == 0)
 		{
 			continue;
 		}	
-
+		   
 		shiftMask = 0x80000000;
 		for(y = 31; y >= 0; y--)
-		{
+		{   
 			if(A[i] & shiftMask)
 			{
 				return y + (i*32);
 			}
 			
 			shiftMask >>= 1;
-		}		
+		}	    
 	}
+
+  return 0;	
 }
 
  /*
@@ -498,13 +501,10 @@ int main(void)
 {
   //srand(1);
   uint32_t a[6] = {0x8002045, 0x40000, 0x0, 0x0, 0x0, 0x0};
-  uint32_t b[6] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+  uint32_t b[6] = {0x4, 0x0, 0x0, 0x0, 0x0, 0x0};
+  uint32_t c[6];
   uint32_t i[6];
-//  poly_calculateInverse(6, a, b, i);
-  poly_square(6, a, b);
-  f2m_print(6, b);
-  printf("\n");
-  system("pause");
-//  printf("\ntest_ecc_b163: %d\n",test_ecc_b163());
+
+  //  printf("\ntest_ecc_b163: %d\n",test_ecc_b163());
   return 0;
 }
