@@ -357,19 +357,18 @@ uint32_t getDegree(uint32_t t, uint32_t *A)
  */
 void shiftRight(uint32_t t, uint32_t *A)
 {
-	uint32_t i, tMinus, lowerMask;
-	tMinus = t - 1;
+	uint32_t i, lowerMask;
 	lowerMask = 1;
 
-	for(i = 0; i < t;i++)
+	for(i = 0; i < t - 1;i++)
 	{
-		A[i] >> 1;
-		if(i < tMinus)
-		{
-			// preserve lowermost bit of next word
-			A[i] |= (A[i+1] & lowerMask) << 31;
-		}
+		A[i] >>= 1;
+		// preserve lowermost bit of next word
+		A[i] |= (A[i+1] & lowerMask) << 31;
 	}
+	
+	// no carry for highest index, saves one loop
+	A[t-1] >>= 1;
 }
 
  /*
@@ -391,27 +390,30 @@ void shiftRight(uint32_t t, uint32_t *A)
 	uint32_t T[256];
 	initZero(256, T);
 	uint32_t i, z, shiftMask;
-	for(i = 0; i <= 255; i++)
+	for(i = 1; i <= 255; i++)
 	{
 		shiftMask = 1;
 		for(z = 0; z < 8; z++)
 		{
-			T[i] |= (i & shiftMask) << z;                 
+			T[i] |= (i & shiftMask) << z;          
 			shiftMask = shiftMask << 1;
 		}		
 	}
-     // squaring
-	uint32_t mask = 0xFF;
-	uint32_t b0, b1, b2, b3, y;
-	for(y = 0; y < t; y++)
+	     
+   // squaring
+	uint32_t b0, b1, b2, b3, tmp;
+	for(i = 0; i < t; i++)
 	{
-		b0 = A[y] & mask;
-		b1 = (A[y] >> 8) & mask;
-		b2 = (A[y] >> 16) & mask;		
-		b3 = (A[y] >> 24) & mask;
+		b0 = A[i] & 0xFF;
+		tmp = A[i] >> 8;
+		b1 = tmp & 0xFF; 
+		tmp >>= 8;
+		b2 = tmp & 0xFF;		
+		tmp >>= 8;
+		b3 = tmp & 0xFF;
 		
-		B[2*y] = T[b1] | T[b0];
-		B[2*y + 1] = T[b3] | T[b2];
+		B[2*i] = (T[b1] << 16) | T[b0];
+		B[2*i + 1] = (T[b3] << 16) | T[b2];
 	}
 }
 
@@ -424,7 +426,6 @@ void shiftRight(uint32_t t, uint32_t *A)
  *	array A 
  *  array F
  *  array I
- *
  */
 void poly_calculateInverse(uint32_t t, uint32_t *A, uint32_t *F, uint32_t *I)
 {
@@ -496,11 +497,14 @@ void poly_calculateInverse(uint32_t t, uint32_t *A, uint32_t *F, uint32_t *I)
 int main(void)
 {
   //srand(1);
-  uint32_t a[6] = {0x0, 0x0, 0x0, 0x0, 0x0, 0xE1F3CD03};
-  uint32_t b[6] = {0x0, 0x0, 0x0, 0x0, 0x0, 0xE1F3CD03};
+  uint32_t a[6] = {0x8002045, 0x40000, 0x0, 0x0, 0x0, 0x0};
+  uint32_t b[6] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
   uint32_t i[6];
 //  poly_calculateInverse(6, a, b, i);
-//  poly_square(6, a, b);
+  poly_square(6, a, b);
+  f2m_print(6, b);
+  printf("\n");
+  system("pause");
 //  printf("\ntest_ecc_b163: %d\n",test_ecc_b163());
   return 0;
 }
