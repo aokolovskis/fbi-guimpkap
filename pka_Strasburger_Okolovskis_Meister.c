@@ -326,16 +326,15 @@ void initOne(uint32_t t, uint32_t *A)
  */
 uint32_t getDegree(uint32_t t, uint32_t *A)
 {
-	uint32_t i;
+	uint32_t i, y, shiftMask;
 	for(i = t - 1; i >= 0; i--)
 	{
 		if(A[i] == 0)
 		{
 			continue;
-		}
-		
-		uint32_t y;
-		uint32_t shiftMask = 0x80000000;
+		}	
+
+		shiftMask = 0x80000000;
 		for(y = 31; y >= 0; y--)
 		{
 			if(A[i] & shiftMask)
@@ -345,6 +344,31 @@ uint32_t getDegree(uint32_t t, uint32_t *A)
 			
 			shiftMask >>= 1;
 		}		
+	}
+}
+
+ /*
+ * FUNCTION
+ * Performs a right shift of the given Array A ( division by z)
+ *
+ * INPUT
+ *	t length of the Array
+ *	array A
+ */
+void shiftRight(uint32_t t, uint32_t *A)
+{
+	uint32_t i, tMinus, lowerMask;
+	tMinus = t - 1;
+	lowerMask = 1;
+
+	for(i = 0; i < t;i++)
+	{
+		A[i] >> 1;
+		if(i < tMinus)
+		{
+			// preserve lowermost bit of next word
+			A[i] |= (A[i+1] & lowerMask) << 31;
+		}
 	}
 }
 
@@ -366,11 +390,10 @@ uint32_t getDegree(uint32_t t, uint32_t *A)
 	// Precomputation of lookup table T
 	uint32_t T[256];
 	initZero(256, T);
-	int i;
+	uint32_t i, z, shiftMask;
 	for(i = 0; i <= 255; i++)
 	{
-		int z;
-		int shiftMask = 1;
+		shiftMask = 1;
 		for(z = 0; z < 8; z++)
 		{
 			T[i] |= (i & shiftMask) << z;                 
@@ -378,14 +401,14 @@ uint32_t getDegree(uint32_t t, uint32_t *A)
 		}		
 	}
      // squaring
-	int mask = 0xFF;
-	uint32_t y;
+	uint32_t mask = 0xFF;
+	uint32_t b0, b1, b2, b3, y;
 	for(y = 0; y < t; y++)
 	{
-		int b0 = A[y] & mask;
-		int b1 = (A[y] >> 8) & mask;
-		int b2 = (A[y] >> 16) & mask;		
-		int b3 = (A[y] >> 24) & mask;
+		b0 = A[y] & mask;
+		b1 = (A[y] >> 8) & mask;
+		b2 = (A[y] >> 16) & mask;		
+		b3 = (A[y] >> 24) & mask;
 		
 		B[2*y] = T[b1] | T[b0];
 		B[2*y + 1] = T[b3] | T[b2];
@@ -405,34 +428,54 @@ uint32_t getDegree(uint32_t t, uint32_t *A)
  */
 void poly_calculateInverse(uint32_t t, uint32_t *A, uint32_t *F, uint32_t *I)
 {
-	uint32_t u[t], v[t], g1[t], g2[t], one[t];
+	uint32_t u[t], v[t], g1[t], g2[t], one[t], zero[t];
 
 	copy(t, A, u);	
 	copy(t, F, v);
 	initOne(t, g1);	
-	initZero(t, g2);	
+	initZero(t, g2);
+	initZero(t, zero);
 	initOne(t, one);
 	
 	while(!f2m_is_equal(t, u, one) && !f2m_is_equal(t, v, one))
 	{
-		// u is divisible by z, if its lowest power is zero
-		while(u[0] & 1 == 0)
+		// u is divisible by z, if its lowest power is zero.
+		while(!f2m_is_equal(t, u, zero) && u[0] & 1 == 0)
 		{
-			// TODO
+			// devision by z is performed by right shift
+			shiftRight(t, u);
+			if(!f2m_is_equal(t, g1, zero) && g1[0] & 1 == 0)
+			{
+				shiftRight(t, g1);
+			}
+			else
+			{
+				// TODO g1 + f / z
+			}
 		}
 		
-		while(v[0] & 1 == 0)
+		while(!f2m_is_equal(t, v, zero) && v[0] & 1 == 0)
 		{
-			// TODO
+			shiftRight(t, v);
+			if(!f2m_is_equal(t, g2, zero) && g2[0] & 1 == 0)
+			{
+				shiftRight(t, g2);
+			}
+			else
+			{
+				// TODO g2 + f / z
+			}
 		}
 		
 		if(getDegree(t, u) > getDegree(t, v))
 		{
-			// TODO
+			// TODO u = u+v
+			// TODO g1 = g1 + g2
 		}
 		else
 		{
-			// TODO
+			//TODO v = v+u
+			//TODO g2 = g2+ g1
 		}
 	}
 	
