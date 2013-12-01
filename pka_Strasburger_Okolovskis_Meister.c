@@ -297,24 +297,6 @@ void initZero(uint32_t t, uint32_t *A)
 
  /*
  * FUNCTION
- * Initializes the given array A with value 1
- *
- * INPUT
- *	t length of the Array
- *	array A
- */
-void initOne(uint32_t t, uint32_t *A)
-{
-	A[0] = 1;
-	uint32_t i;
-	for(i = 1; i < t; i++)
-	{
-		A[i] = 0;       
-	}     	 
-}
-
- /*
- * FUNCTION
  * Determines the degree of the given polynomial
  *
  * INPUT
@@ -451,14 +433,20 @@ void f2m_Add(uint32_t t, uint32_t *A, uint32_t *B, uint32_t *C)
  */
 void f2m_calculateInverse(uint32_t t, uint32_t *A, uint32_t *F, uint32_t *I)
 {
-	uint32_t u[t], v[t], g1[t], g2[t], one[t], zero[t];
-
-	copy(t, A, u);	
-	copy(t, F, v);
-	initOne(t, g1);	
-	initZero(t, g2);
-	initZero(t, zero);
-	initOne(t, one);
+	// init local variables
+	uint32_t i, u[t], v[t], g1[t], g2[t], one[t], zero[t];
+	for(i = 0; i < t; i++)
+	{
+		u[i] = A[i];
+		v[i] = F[i];
+		g1[i] = 0;
+		g2[i] = 0;
+		zero[i] = 0;
+		one[i] = 0;
+	}
+	
+	g1[0] = 1;
+	one[0] = 1;
 	
 	while(!f2m_is_equal(t, u, one) && !f2m_is_equal(t, v, one))
 	{    	
