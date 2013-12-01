@@ -387,7 +387,7 @@ void shiftRight(uint32_t t, uint32_t *A)
  * DESCRIPTION/REMARKS
  *
  */
- void poly_square(uint32_t t, uint32_t *A, uint32_t *B)
+ void f2m_square(uint32_t t, uint32_t *A, uint32_t *B)
  {
 	// Precomputation of lookup table T
 	uint32_t T[256];
@@ -422,6 +422,25 @@ void shiftRight(uint32_t t, uint32_t *A)
 
  /*
  * FUNCTION
+ * Adds polynomial A to polynomial B
+ *
+ * INPUT
+ *	t length of the Arrays
+ *	array A 
+ *  array F
+ *  array C
+ */
+void f2m_Add(uint32_t t, uint32_t *A, uint32_t *B, uint32_t *C)
+{
+	uint32_t i;
+	for(i = 0; i < t; i++)
+	{
+		C[i] = A[i] ^ B[i];
+	}
+}
+
+ /*
+ * FUNCTION
  * Calculates the multiplicative inverse of polynomial A
  *
  * INPUT
@@ -430,7 +449,7 @@ void shiftRight(uint32_t t, uint32_t *A)
  *  array F
  *  array I
  */
-void poly_calculateInverse(uint32_t t, uint32_t *A, uint32_t *F, uint32_t *I)
+void f2m_calculateInverse(uint32_t t, uint32_t *A, uint32_t *F, uint32_t *I)
 {
 	uint32_t u[t], v[t], g1[t], g2[t], one[t], zero[t];
 
@@ -442,44 +461,48 @@ void poly_calculateInverse(uint32_t t, uint32_t *A, uint32_t *F, uint32_t *I)
 	initOne(t, one);
 	
 	while(!f2m_is_equal(t, u, one) && !f2m_is_equal(t, v, one))
-	{
+	{    	
 		// u is divisible by z, if its lowest power is zero.
-		while(!f2m_is_equal(t, u, zero) && u[0] & 1 == 0)
+		while((u[0] & 1) == 0)
 		{
-			// devision by z is performed by right shift
+			// division by z is performed by right shift
 			shiftRight(t, u);
-			if(!f2m_is_equal(t, g1, zero) && g1[0] & 1 == 0)
+			if((g1[0] & 1) == 0)
 			{
 				shiftRight(t, g1);
 			}
 			else
 			{
-				// TODO g1 + f / z
+				// g1 + f
+				f2m_Add(t, g1, F, g1);
+				// divide by z
+				shiftRight(t, g1);
 			}
 		}
 		
-		while(!f2m_is_equal(t, v, zero) && v[0] & 1 == 0)
+		while((v[0] & 1) == 0)
 		{
 			shiftRight(t, v);
-			if(!f2m_is_equal(t, g2, zero) && g2[0] & 1 == 0)
+			if((g2[0] & 1) == 0)
 			{
 				shiftRight(t, g2);
 			}
 			else
 			{
-				// TODO g2 + f / z
+				f2m_Add(t, g2, F, g2);
+				shiftRight(t, g2);
 			}
 		}
 		
 		if(getDegree(t, u) > getDegree(t, v))
 		{
-			// TODO u = u+v
-			// TODO g1 = g1 + g2
+			f2m_Add(t, u, v, u);
+			f2m_Add(t, g1, g2, g1);
 		}
 		else
 		{
-			//TODO v = v+u
-			//TODO g2 = g2+ g1
+			f2m_Add(t, v, u, v);
+			f2m_Add(t, g2, g1, g2);
 		}
 	}
 	
@@ -499,12 +522,15 @@ void poly_calculateInverse(uint32_t t, uint32_t *A, uint32_t *F, uint32_t *I)
  */
 int main(void)
 {
-  //srand(1);
-  uint32_t a[6] = {0x8002045, 0x40000, 0x0, 0x0, 0x0, 0x0};
-  uint32_t b[6] = {0x4, 0x0, 0x0, 0x0, 0x0, 0x0};
-  uint32_t c[6];
-  uint32_t i[6];
-
-  //  printf("\ntest_ecc_b163: %d\n",test_ecc_b163());
-  return 0;
+	//srand(1);
+	uint32_t a[6] = {0x0, 0x00000, 0x0, 0x0, 0x0, 0x7};
+	uint32_t f[6] = {0x000000C9, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000008};
+	uint32_t i[6] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+	
+	f2m_calculateInverse(6, a, f, i);
+	f2m_print(6, i);
+	printf("\n");
+	system("pause");
+	//  printf("\ntest_ecc_b163: %d\n",test_ecc_b163());
+	return 0;
 }
