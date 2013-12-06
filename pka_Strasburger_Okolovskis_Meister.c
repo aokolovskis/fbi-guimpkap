@@ -497,6 +497,8 @@ void poly_calculateInverse(uint32_t t, uint32_t *A, uint32_t *F, uint32_t *I)
  * FUNCTION
  *   main 
  */
+#ifdef TESTING
+#else 
 int main(void)
 {
   //srand(1);
@@ -507,4 +509,9 @@ int main(void)
 
   //  printf("\ntest_ecc_b163: %d\n",test_ecc_b163());
   return 0;
+}
+#endif
+
+void hello_world(void){
+	printf( "\nHello World\n\n" );
 }
