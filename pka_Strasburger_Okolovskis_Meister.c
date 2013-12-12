@@ -159,7 +159,96 @@ void mult_scalar(
   uint32_t *yQ  
 )
 {
-  /* TODO */
+	// calculate t (size of Arrays)
+	uint32_t t = (m/32) + 1;
+	
+	// init 
+	uint32_t Xq[t], Zq[t], Xr[t], Zr[t];	
+	uint32_t y;
+	for(y = 0; y < t; y++)
+	{
+		//Zq = 0
+		Zq[y] = 0x0;
+		Zr[y] = 0x0;
+		Xq[y] = 0x0;
+		//Xr = xp
+		Xr[y] = xP[y];
+	}
+	
+	//Zr = 1, Xq = 1
+	Zr[0] = 0x1;
+	Xq[0] = 0x1;
+		
+	// montgomery ladder
+	int i;
+	for(i = t - 1; i > 0; i--)
+	{
+		uint32_t bitMask = 0x80000000;
+		int y;
+		for(y = 31; y >= 0; y--)
+		{
+			if(d[i] & bitMask == 1)
+			{	
+				// PADD
+				
+				// Xq = xp*(Xr*Zq + Xq*Zr) ^2 + XqZrXrZq
+				// Zq = (Xr*Zq + Xq*Zr) ^ 2
+
+				// 1. temp1 = Xq*Zr
+				// 2. temp2 = Xr*Zq
+				// 3. temp3 = temp1 * temp2
+				// 4. temp4 = (temp1 + temp2)^2
+				// 5.  Zq = temp4
+				// 6. temp5 = xp*temp4
+				// 7. Xq = temp5 + temp3
+				
+				// PDOUBLE
+				
+				// Xr = (Xr^2)^2 + b*(Zr^2)^2
+				// Zr = Xr^2 * Zr^2
+				
+				// 1. temp1 = Xr^2
+				// 2. temp2 = Zr^2
+				// Zr = temp1 * temp2
+				// temp3 = temp1^2
+				// temp4 = temp2^2
+				// temp5 = b*temp4
+				// Xr =  temp3 + temp5
+			}
+			else
+			{
+				// PADD
+				// Xr = xp(XqZr + XrZq) ^2 + XrZqXqZr
+				// Zr = (XqZr + XrZq) ^2
+				
+				// 1. temp1 = Xr*Zq
+				// 2. temp2 = Xq*Zr				
+				// 3. temp3 = temp1 * temp2
+				// 4. temp4 = (temp1 + temp2)^2
+				// 5.  Zq = temp4
+				// 6. temp5 = xp*temp4
+				// 7. Xq = temp5 + temp3
+				
+				// PDOUBLE
+				
+				// Xq = (Xq^2)^2 + b*(Zq^2)^2
+				// Zq = Xq^2 * Zq^2
+				
+				// 1. temp1 = Xq^2
+				// 2. temp2 = Zq^2
+				// Zq = temp1 * temp2
+				// temp3 = temp1^2
+				// temp4 = temp2^2
+				// temp5 = b*temp4
+				// Xq =  temp3 + temp5
+			}
+			
+			bitMask >>= 1;
+		}
+	}
+	
+	// xq = Xq // Xq.length might now be > xq.length! 
+	// TODO Rückrechnung von yq
 } 
 
  
@@ -291,7 +380,7 @@ void initZero(uint32_t t, uint32_t *A)
 	uint32_t i;
 	for(i = 0; i < t; i++)
 	{
-		A[i] = 0;       
+		A[i] = 0x0;       
 	}     
 }
 
@@ -309,7 +398,7 @@ void initZero(uint32_t t, uint32_t *A)
 uint32_t getDegree(uint32_t t, uint32_t *A)
 {
 	int i, y;
-  uint32_t shiftMask;
+	uint32_t shiftMask;
 	for(i = t - 1; i >= 0; i--)
 	{
 		if(A[i] == 0)
@@ -361,16 +450,17 @@ void shiftRight(uint32_t t, uint32_t *A)
  * Calculates the square of an polynomial
  *
  * INPUT
- *	t length of the Arrays
+ *	t length of the Array A
  *	array A
  *  array B 
  * OUTPUT
  *
  * DESCRIPTION/REMARKS
- *
+ * Array B must be initialized with the length 2*t.
  */
  void f2m_square(uint32_t t, uint32_t *A, uint32_t *B)
  {
+	// TODO move out this method and init during program start
 	// Precomputation of lookup table T
 	uint32_t T[256];
 	initZero(256, T);
@@ -439,14 +529,14 @@ void f2m_calculateInverse(uint32_t t, uint32_t *A, uint32_t *F, uint32_t *I)
 	{
 		u[i] = A[i];
 		v[i] = F[i];
-		g1[i] = 0;
-		g2[i] = 0;
-		zero[i] = 0;
-		one[i] = 0;
+		g1[i] = 0x0;
+		g2[i] = 0x0;
+		zero[i] = 0x0;
+		one[i] = 0x0;
 	}
 	
-	g1[0] = 1;
-	one[0] = 1;
+	g1[0] = 0x1;
+	one[0] = 0x1;
 	
 	while(!f2m_is_equal(t, u, one) && !f2m_is_equal(t, v, one))
 	{    	
@@ -517,11 +607,11 @@ int main(void)
 	uint32_t f[6] = {0x000000C9, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000008};
 	uint32_t i[6] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
 	
-	f2m_calculateInverse(6, a, f, i);
-	f2m_print(6, i);
-	printf("\n");
-	system("pause");
-	//  printf("\ntest_ecc_b163: %d\n",test_ecc_b163());
+//	f2m_calculateInverse(6, a, f, i);
+	//f2m_print(6, i);
+//printf("\n");
+	//system("pause");
+	  printf("\ntest_ecc_b163: %d\n",test_ecc_b163());
 	return 0;
 }
 #endif
