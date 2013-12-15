@@ -18,6 +18,11 @@
 #include <stdint.h>
 
 /*
+ * Lookup table required for squaring
+ */
+uint32_t* lookup_table = NULL;
+
+/*
  * FUNCTION
  *   f2m_rand
  *
@@ -445,6 +450,35 @@ void shiftRight(uint32_t t, uint32_t *A)
 	A[t-1] >>= 1;
 }
 
+/*
+* FUNCTION
+* Initializes the lookup table required for function f2m_square
+* 
+* INPUT
+* 
+* OUTPUT
+* 
+* DESCRIPTION/REMARKS
+* Is called automatically at first invocation of f2m_square
+*/
+void initLookupTable()
+{
+	lookup_table = malloc(256* sizeof(uint32_t));	
+	
+	// Precomputation of lookup table T
+	initZero(256, lookup_table);
+	uint32_t i, z, shiftMask;
+	for(i = 1; i <= 255; i++)
+	{
+		shiftMask = 1;
+		for(z = 0; z < 8; z++)
+		{
+			lookup_table[i] |= (i & shiftMask) << z;          
+			shiftMask = shiftMask << 1;
+		}		
+	}
+}
+
  /*
  * FUNCTION
  * Calculates the square of an polynomial
@@ -459,24 +493,14 @@ void shiftRight(uint32_t t, uint32_t *A)
  * Array B must be initialized with the length 2*t.
  */
  void f2m_square(uint32_t t, uint32_t *A, uint32_t *B)
- {
-	// TODO move out this method and init during program start
-	// Precomputation of lookup table T
-	uint32_t T[256];
-	initZero(256, T);
-	uint32_t i, z, shiftMask;
-	for(i = 1; i <= 255; i++)
-	{
-		shiftMask = 1;
-		for(z = 0; z < 8; z++)
-		{
-			T[i] |= (i & shiftMask) << z;          
-			shiftMask = shiftMask << 1;
-		}		
+ {	     
+	// init lookup table
+	if(!lookup_table)
+	{	
+		initLookupTable();
 	}
-	     
-   // squaring
-	uint32_t b0, b1, b2, b3, tmp;
+ 
+	uint32_t i, b0, b1, b2, b3, tmp;
 	for(i = 0; i < t; i++)
 	{
 		b0 = A[i] & 0xFF;
@@ -487,8 +511,8 @@ void shiftRight(uint32_t t, uint32_t *A)
 		tmp >>= 8;
 		b3 = tmp & 0xFF;
 		
-		B[2*i] = (T[b1] << 16) | T[b0];
-		B[2*i + 1] = (T[b3] << 16) | T[b2];
+		B[2*i] = (lookup_table[b1] << 16) | lookup_table[b0];
+		B[2*i + 1] = (lookup_table[b3] << 16) | lookup_table[b2];
 	}
 }
 
@@ -601,7 +625,7 @@ void f2m_calculateInverse(uint32_t t, uint32_t *A, uint32_t *F, uint32_t *I)
 #ifdef TESTING
 #else 
 int main(void)
-{
+{	
 	//srand(1);
 	uint32_t a[6] = {0x0, 0x00000, 0x0, 0x0, 0x0, 0x7};
 	uint32_t f[6] = {0x000000C9, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000008};
