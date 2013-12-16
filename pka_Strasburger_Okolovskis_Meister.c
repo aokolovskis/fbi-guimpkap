@@ -16,6 +16,65 @@
  
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+
+const uint32_t WORD = 32;
+
+
+ /*
+ * FUNCTION
+ * 
+ *
+ * INPUT
+ *
+ *
+ * OUTPUT
+ *
+ * DESCRIPTION/REMARKS
+ * 
+ */
+
+
+uint32_t * shiftLeft(
+	       uint32_t *t, 
+	       uint32_t *A, 
+	       uint32_t shiftcount
+	       
+	       )
+{
+	uint32_t i, upperMask;
+	//uint32_t *out;
+	upperMask = 0xFFFFFFFF;
+
+        uint32_t carries = A[*t-1] & (upperMask << WORD-shiftcount);
+	
+	
+	if (carries > 0 ){
+	  uint32_t* out = malloc((*t+1)*4);
+          out[*t] = carries >> (WORD-shiftcount);
+	  for(i = *t-1; i >0;i--)
+	    {
+               out[i] = A[i] << shiftcount;
+               out[i] |= (A[i-1] >> (WORD-shiftcount));
+	    }
+	  out[0] = A[0] << shiftcount;
+	  (*t)++;
+	  return out;
+	} else {
+	  for(i = *t-1; i > 0;i--)
+	    {
+A[i] = A[i] << shiftcount;
+                  A[i] |= (A[i-1] >> (WORD-shiftcount));
+	
+	    }
+	 A[0] = A[0] << shiftcount; 
+	 return NULL;
+	}
+}
+
+
+
+
 
 /*
  * FUNCTION
@@ -79,178 +138,239 @@ void f2m_print(
 /* 
  * FUNCTION 
  *   f2m_is_equal
- *
- * INPUT
- *   + length t of all arrays
- *   + array A 
- *   + array B
- * 
- * OUTPUT
- *   -
- *
- * RETURN 
- *   + 1 (=true) if the content of A and B is equal
- *   + 0 (=false) otherwise
- *
- * DESCRIPTION/REMARKS
- *   -
- */
-uint32_t f2m_is_equal(
-  uint32_t t,
-  uint32_t *A,
-  uint32_t *B
-)
+   *
+   * INPUT
+   *   + length t of all arrays
+   *   + array A 
+   *   + array B
+   * 
+   * OUTPUT
+   *   -
+   *
+   * RETURN 
+   *   + 1 (=true) if the content of A and B is equal
+   *   + 0 (=false) otherwise
+   *
+   * DESCRIPTION/REMARKS
+   *   -
+   */
+  uint32_t f2m_is_equal(
+    uint32_t t,
+    uint32_t *A,
+    uint32_t *B
+  )
+  {
+    uint32_t i;
+    for (i = 0; i < t; i++) if (A[i] != B[i]) return 0;
+    return 1;
+  }
+
+  /* 
+   * FUNCTION 
+   *   Creates of copy of a polynomial
+   *
+   * INPUT
+   *   + length t of all arrays
+   *   + array A 
+   *   + array B
+   */
+  void copy(uint32_t t, uint32_t *A, uint32_t *B)
+  {	
+	  uint32_t i;
+	  for(i = 0; i < t; i++)
+	  {
+		  B[i] = A[i];
+	  }
+  }
+
+
+ /* 
+   * FUNCTION 
+   *  Initalizes an Array with Zeros
+   *
+   * INPUT
+   *   + length t of array
+   *   + array A 
+   */
+
+void init_zero(uint32_t t, uint32_t *A)
 {
   uint32_t i;
-  for (i = 0; i < t; i++) if (A[i] != B[i]) return 0;
-  return 1;
+  for(i = 0; i < t; i++){
+      A[i] = 0 ;
+  }
 }
 
-/* 
- * FUNCTION 
- *   Creates of copy of a polynomial
- *
- * INPUT
- *   + length t of all arrays
- *   + array A 
- *   + array B
- */
-void copy(uint32_t t, uint32_t *A, uint32_t *B)
-{	
-	uint32_t i;
-	for(i = 0; i < t; i++)
-	{
-		B[i] = A[i];
-	}
-}
 
-/*
- * FUNCTION
- *   mult_scalar
- *
- * INPUT
- *   + extension degree m of the binary field 
- *   + irreducible polynom F to generate the finite field
- *   + elliptic curve parameter a
- *   + elliptic curve parameter b
- *   + scalar d with maximum bitlength m
- *   + x-coordinate xP of point P
- *   + y-coordinate yP of point P
- *
- * OUTPUT
- *   + x-coordinate xQ of point Q
- *   + y-coordinate yQ of point Q
- *
- * RETURN
- *   -
- *
- * DESCRIPTION/REMARKS
- *   The function calculates the point Q = dP
- */
-void mult_scalar(
-  uint32_t m,
-  uint32_t *F,
-  uint32_t *a,
-  uint32_t *b,
-  uint32_t *d,
-  uint32_t *xP,
-  uint32_t *yP,
-  uint32_t *xQ,
-  uint32_t *yQ  
-)
+
+  /*
+   * FUNCTION
+   *   mult_scalar
+   *
+   * INPUT
+   *   + extension degree m of the binary field 
+   *   + irreducible polynom F to generate the finite field
+   *   + elliptic curve parameter a
+   *   + elliptic curve parameter b
+   *   + scalar d with maximum bitlength m
+   *   + x-coordinate xP of point P
+   *   + y-coordinate yP of point P
+   *
+   * OUTPUT
+   *   + x-coordinate xQ of point Q
+   *   + y-coordinate yQ of point Q
+   *
+   * RETURN
+   *   -
+   *
+   * DESCRIPTION/REMARKS
+   *   The function calculates the point Q = dP
+   */
+  void mult_scalar(
+    uint32_t m,
+    uint32_t *F,
+    uint32_t *a,
+    uint32_t *b,
+    uint32_t *d,
+    uint32_t *xP,
+    uint32_t *yP,
+    uint32_t *xQ,
+    uint32_t *yQ  
+  )
+  {
+	  // calculate t (size of Arrays)
+	  uint32_t t = (m/32) + 1;
+
+	  // init 
+	  uint32_t Xq[t], Zq[t], Xr[t], Zr[t];	
+	  uint32_t y;
+	  for(y = 0; y < t; y++)
+	  {
+		  //Zq = 0
+		  Zq[y] = 0x0;
+		  Zr[y] = 0x0;
+		  Xq[y] = 0x0;
+		  //Xr = xp
+		  Xr[y] = xP[y];
+	  }
+
+	  //Zr = 1, Xq = 1
+	  Zr[0] = 0x1;
+	  Xq[0] = 0x1;
+
+	  // montgomery ladder
+	  int i;
+	  for(i = t - 1; i > 0; i--)
+	  {
+		  uint32_t bitMask = 0x80000000;
+		  int y;
+		  for(y = 31; y >= 0; y--)
+		  {
+			  if(d[i] & bitMask == 1)
+			  {	
+				  // PADD
+
+				  // Xq = xp*(Xr*Zq + Xq*Zr) ^2 + XqZrXrZq
+				  // Zq = (Xr*Zq + Xq*Zr) ^ 2
+
+				  // 1. temp1 = Xq*Zr
+				  // 2. temp2 = Xr*Zq
+				  // 3. temp3 = temp1 * temp2
+				  // 4. temp4 = (temp1 + temp2)^2
+				  // 5.  Zq = temp4
+				  // 6. temp5 = xp*temp4
+				  // 7. Xq = temp5 + temp3
+
+				  // PDOUBLE
+
+				  // Xr = (Xr^2)^2 + b*(Zr^2)^2
+				  // Zr = Xr^2 * Zr^2
+
+				  // 1. temp1 = Xr^2
+				  // 2. temp2 = Zr^2
+				  // Zr = temp1 * temp2
+				  // temp3 = temp1^2
+				  // temp4 = temp2^2
+				  // temp5 = b*temp4
+				  // Xr =  temp3 + temp5
+			  }
+			  else
+			  {
+				  // PADD
+				  // Xr = xp(XqZr + XrZq) ^2 + XrZqXqZr
+				  // Zr = (XqZr + XrZq) ^2
+
+				  // 1. temp1 = Xr*Zq
+				  // 2. temp2 = Xq*Zr				
+				  // 3. temp3 = temp1 * temp2
+				  // 4. temp4 = (temp1 + temp2)^2
+				  // 5.  Zq = temp4
+				  // 6. temp5 = xp*temp4
+				  // 7. Xq = temp5 + temp3
+
+				  // PDOUBLE
+
+				  // Xq = (Xq^2)^2 + b*(Zq^2)^2
+				  // Zq = Xq^2 * Zq^2
+
+				  // 1. temp1 = Xq^2
+				  // 2. temp2 = Zq^2
+				  // Zq = temp1 * temp2
+				  // temp3 = temp1^2
+				  // temp4 = temp2^2
+				  // temp5 = b*temp4
+				  // Xq =  temp3 + temp5
+			  }
+
+			  bitMask >>= 1;
+		  }
+	  }
+
+	  // xq = Xq // Xq.length might now be > xq.length! 
+	  // TODO Rückrechnung von yq
+  } 
+
+
+  /* 
+   * FUNCTION 
+   *   Multiplies to Polynomial 
+   *
+   * INPUT
+   *   A as Poly
+   *   B as Poly
+   *   C as Result 
+   *   + array length of A as tA
+   *   + array length of B as tB
+   *
+   * DESCRIPTION/REMARKS
+   *   The memory of C must already be allocated before the function is called.
+   */
+void f2m_mult (
+	       uint32_t t,
+	       uint32_t *A,
+	       uint32_t *B,
+	       uint32_t *C
+	       )
 {
-	// calculate t (size of Arrays)
-	uint32_t t = (m/32) + 1;
-	
-	// init 
-	uint32_t Xq[t], Zq[t], Xr[t], Zr[t];	
-	uint32_t y;
-	for(y = 0; y < t; y++)
-	{
-		//Zq = 0
-		Zq[y] = 0x0;
-		Zr[y] = 0x0;
-		Xq[y] = 0x0;
-		//Xr = xp
-		Xr[y] = xP[y];
-	}
-	
-	//Zr = 1, Xq = 1
-	Zr[0] = 0x1;
-	Xq[0] = 0x1;
-		
-	// montgomery ladder
-	int i;
-	for(i = t - 1; i > 0; i--)
-	{
-		uint32_t bitMask = 0x80000000;
-		int y;
-		for(y = 31; y >= 0; y--)
-		{
-			if(d[i] & bitMask == 1)
-			{	
-				// PADD
-				
-				// Xq = xp*(Xr*Zq + Xq*Zr) ^2 + XqZrXrZq
-				// Zq = (Xr*Zq + Xq*Zr) ^ 2
-
-				// 1. temp1 = Xq*Zr
-				// 2. temp2 = Xr*Zq
-				// 3. temp3 = temp1 * temp2
-				// 4. temp4 = (temp1 + temp2)^2
-				// 5.  Zq = temp4
-				// 6. temp5 = xp*temp4
-				// 7. Xq = temp5 + temp3
-				
-				// PDOUBLE
-				
-				// Xr = (Xr^2)^2 + b*(Zr^2)^2
-				// Zr = Xr^2 * Zr^2
-				
-				// 1. temp1 = Xr^2
-				// 2. temp2 = Zr^2
-				// Zr = temp1 * temp2
-				// temp3 = temp1^2
-				// temp4 = temp2^2
-				// temp5 = b*temp4
-				// Xr =  temp3 + temp5
-			}
-			else
-			{
-				// PADD
-				// Xr = xp(XqZr + XrZq) ^2 + XrZqXqZr
-				// Zr = (XqZr + XrZq) ^2
-				
-				// 1. temp1 = Xr*Zq
-				// 2. temp2 = Xq*Zr				
-				// 3. temp3 = temp1 * temp2
-				// 4. temp4 = (temp1 + temp2)^2
-				// 5.  Zq = temp4
-				// 6. temp5 = xp*temp4
-				// 7. Xq = temp5 + temp3
-				
-				// PDOUBLE
-				
-				// Xq = (Xq^2)^2 + b*(Zq^2)^2
-				// Zq = Xq^2 * Zq^2
-				
-				// 1. temp1 = Xq^2
-				// 2. temp2 = Zq^2
-				// Zq = temp1 * temp2
-				// temp3 = temp1^2
-				// temp4 = temp2^2
-				// temp5 = b*temp4
-				// Xq =  temp3 + temp5
-			}
-			
-			bitMask >>= 1;
-		}
-	}
-	
-	// xq = Xq // Xq.length might now be > xq.length! 
-	// TODO Rückrechnung von yq
-} 
-
+  //init_zero(tA+tB,C);
+  uint32_t k,j;
+  for (k=0;k<WORD;k++){
+     for (j=0;j<t;j++){
+       if (A[j]&(0x1<<k)){
+	 
+	 //	 C{j} := C{j} XOR (B << k)
+       }
+     }
+     if (k != (WORD-1)){
+       shiftLeft(&t,B,1);
+     }
+  }
+  //FOR k := 0 TO W-1 DO
+  //   FOR j := 0 TO t-1 DO
+  //      IF BIT(A[j], k) = 1 THEN
+  //         C := C XOR (B << (W*j + k))
+  //RETURN (C)
+}
  
 /* 
  * FUNCTION 
@@ -428,6 +548,7 @@ uint32_t getDegree(uint32_t t, uint32_t *A)
  * INPUT
  *	t length of the Array
  *	array A
+ * 
  */
 void shiftRight(uint32_t t, uint32_t *A)
 {
@@ -444,6 +565,7 @@ void shiftRight(uint32_t t, uint32_t *A)
 	// no carry for highest index, saves one loop
 	A[t-1] >>= 1;
 }
+
 
  /*
  * FUNCTION
