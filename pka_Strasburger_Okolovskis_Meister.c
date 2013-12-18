@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 const uint32_t WORD = 32;
 
@@ -50,12 +51,12 @@ uint32_t * shiftLeft(
 	
 	
 	if (carries > 0 ){
-	  uint32_t* out = malloc((*t+1)*4);
+	  uint32_t* out = malloc((*t+1)*sizeof(uint32_t));
           out[*t] = carries >> (WORD-shiftcount);
 	  for(i = *t-1; i >0;i--)
 	    {
-               out[i] = A[i] << shiftcount;
-               out[i] |= (A[i-1] >> (WORD-shiftcount));
+	      out[i] =  (upperMask) & (A[i] << shiftcount);
+	      out[i] |= (upperMask) & (A[i-1] >> (WORD-shiftcount));
 	    }
 	  out[0] = A[0] << shiftcount;
 	  (*t)++;
@@ -63,9 +64,8 @@ uint32_t * shiftLeft(
 	} else {
 	  for(i = *t-1; i > 0;i--)
 	    {
-A[i] = A[i] << shiftcount;
-                  A[i] |= (A[i-1] >> (WORD-shiftcount));
-	
+	      A[i] = A[i] << shiftcount;
+	      A[i] |= (A[i-1] >> (WORD-shiftcount)); 
 	    }
 	 A[0] = A[0] << shiftcount; 
 	 return NULL;
@@ -104,6 +104,62 @@ void f2m_rand(
   for (i = 0; i < t-1; i++) A[i] = rand();
   A[t-1] = rand() & (0xFFFFFFFF >> (32 - m % 32));
 }
+
+/*
+ * FUNCTION
+ *   f2m_print
+ *
+ * INPUT
+ *   + length t of array A
+ *   + array A 
+ *
+ * OUTPUT
+ *   -
+ * 
+ * RETURN
+ *   -
+ * 
+ * DESCRIPTION/REMARKS
+ *   The function prints the array A in hexadecimal representation
+ *   onto the sceen. The least significant bit is aligned to the
+ *   right hand side.
+ */
+void f2m_print_human(
+  uint32_t t,
+	uint32_t *A
+)
+{ 
+  uint32_t i;
+  bool first = true;
+  printf("f(z) = ");
+  for (i=t;i>0;) {
+    i--;
+    uint32_t j; 
+    uint32_t mask = 0x80000000;
+    for(j=0; j < 32 ; j++){
+      if (A[i]&(mask>>j)){
+	if (first) {
+	  first = false;
+	} else {
+	  printf(" + ");
+	}
+	int exp = i*32+(31-j);
+	if (exp == 0) {
+	   printf("1");
+	} else if (exp == 1){
+	   printf("z");
+	}else {
+	  printf("z^%d",exp);
+	}
+      }
+    }
+  }
+  if (first) {
+    printf("0");
+  }
+  printf("\n");
+}
+
 
 /*
  * FUNCTION
@@ -327,7 +383,7 @@ void init_zero(uint32_t t, uint32_t *A)
 	  }
 
 	  // xq = Xq // Xq.length might now be > xq.length! 
-	  // TODO R�ckrechnung von yq
+	  // TODO Rückrechnung von yq
   } 
 
 
@@ -344,6 +400,7 @@ void init_zero(uint32_t t, uint32_t *A)
    *
    * DESCRIPTION/REMARKS
    *   The memory of C must already be allocated before the function is called.
+   *   C musst allso been zero initaliced
    */
 void f2m_mult (
 	       uint32_t t,
@@ -352,23 +409,40 @@ void f2m_mult (
 	       uint32_t *C
 	       )
 {
-  //init_zero(tA+tB,C);
+  uint32_t * B_copy = (uint32_t *) malloc(t*sizeof(uint32_t));
+  copy(t,B,B_copy);
+  uint32_t t_b_copy = t;  
+
   uint32_t k,j;
   for (k=0;k<WORD;k++){
      for (j=0;j<t;j++){
-       if (A[j]&(0x1<<k)){
-	 
-	 //	 C{j} := C{j} XOR (B << k)
+       uint32_t working_bit = A[j]&(0x1<<k);
+	 if (working_bit>0){
+	   uint32_t truncated_c_index;
+           
+	   for (truncated_c_index = j;truncated_c_index < t_b_copy; truncated_c_index++){
+	     C[truncated_c_index] =  C[truncated_c_index] ^ B_copy[truncated_c_index];
+	   }
+	  
+	 //	 C{j} := C{j} XOR B
        }
      }
      if (k != (WORD-1)){
-       shiftLeft(&t,B,1);
+       uint32_t* ptr = shiftLeft(&t_b_copy,B_copy,1);
+       if (ptr){
+	  free(B_copy);
+	  B_copy = ptr;
+       }
      }
   }
+  free(B_copy);
+
+  //C=0;
   //FOR k := 0 TO W-1 DO
   //   FOR j := 0 TO t-1 DO
   //      IF BIT(A[j], k) = 1 THEN
-  //         C := C XOR (B << (W*j + k))
+  //       C{j} := C{j} XOR B 
+  // IFk≠W-1THENB:=B<<1
   //RETURN (C)
 }
  
@@ -503,6 +577,9 @@ void initZero(uint32_t t, uint32_t *A)
 		A[i] = 0x0;       
 	}     
 }
+
+
+
 
  /*
  * FUNCTION
