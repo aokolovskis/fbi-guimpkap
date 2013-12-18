@@ -128,7 +128,7 @@ void multtest(){
 
 
 
-  f2m_print_human(t,e);
+  
 
   f2m_mult (t,z,z, r1);
   testeqprint("multtest",testnr++,t,z,r1);
@@ -148,7 +148,6 @@ void multtest(){
   
   f2m_mult (t,f,g, r2);
   testeqprint("multtest",testnr++,2,h,r2);
-  f2m_print_human(2,r2);
   initZero(t,r2); 
 
 

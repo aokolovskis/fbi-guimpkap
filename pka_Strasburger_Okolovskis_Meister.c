@@ -426,7 +426,7 @@ void f2m_mult (
 	   uint32_t truncated_c_index;
            
 	   for (truncated_c_index = j;truncated_c_index < t_b_copy; truncated_c_index++){
-	     C[truncated_c_index] =  C[truncated_c_index] ^ B_copy[truncated_c_index];
+	     C[truncated_c_index] =  C[truncated_c_index] ^ B_copy[truncated_c_index-j];
 	   }
 	  
 	 //	 C{j} := C{j} XOR B
