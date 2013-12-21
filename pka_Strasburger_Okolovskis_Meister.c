@@ -740,8 +740,8 @@ void f2m_Add(uint32_t t, uint32_t *A, uint32_t *B, uint32_t *C)
  * INPUT
  *	t length of the Arrays
  *	array A 
- *  array F
- *  array I
+ *  array F (irreducibel polynom
+ *  array I (result)
  */
 void f2m_calculateInverse(uint32_t t, uint32_t *A, uint32_t *F, uint32_t *I)
 {
@@ -763,7 +763,7 @@ void f2m_calculateInverse(uint32_t t, uint32_t *A, uint32_t *F, uint32_t *I)
 	while(!f2m_is_equal(t, u, one) && !f2m_is_equal(t, v, one))
 	{    	
 		// u is divisible by z, if its lowest power is zero.
-		while((u[0] & 1) == 0)
+		while(!f2m_is_equal(t, u, zero) && (u[0] & 1) == 0)
 		{
 			// division by z is performed by right shift
 			shiftRight(t, u);
@@ -780,7 +780,7 @@ void f2m_calculateInverse(uint32_t t, uint32_t *A, uint32_t *F, uint32_t *I)
 			}
 		}
 		
-		while((v[0] & 1) == 0)
+		while(!f2m_is_equal(t, v, zero) && (v[0] & 1) == 0)
 		{
 			shiftRight(t, v);
 			if((g2[0] & 1) == 0)

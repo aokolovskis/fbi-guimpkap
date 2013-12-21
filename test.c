@@ -200,7 +200,83 @@ void testSquaring()
 
 void testInvers()
 {
-	// TODO
+	printf("Testing inverting\n");
+	
+	printf("Test0\n");
+	// x^2 + x^1 + 1
+	uint32_t irred0[1] = { 0x7};
+	// x + 1
+	uint32_t input0[1] = { 0x3};
+	uint32_t invers0[1];	
+	f2m_calculateInverse(1, input0, irred0, invers0);
+	
+	uint32_t result0[1];
+    init_zero(1, result0);
+	f2m_mult (1, input0, invers0, result0);
+	f2m_print_human(1, result0);	
+	
+	
+	
+	printf("Test1\n");
+	// x^163 + x^7 + x^6 + x^3 + 1
+	uint32_t irred1[6] = { 0xC9, 0x0, 0x0, 0x0, 0x0, 0x8};	
+	// x^112 + x^32 + x^16 + x^8 + x^4 + x^2 + x^1
+	uint32_t input1[6] = { 0x10116, 0x1, 0x0, 0x10000, 0x0, 0x0 };
+	uint32_t invers1[6];	
+	f2m_calculateInverse(6, input1, irred1, invers1);
+	//printf("\n");
+	f2m_print(6, invers1);
+	
+	uint32_t result1[12];
+    init_zero(12, result1);
+	f2m_print_human(6, input1);
+	f2m_print_human(6, invers1);
+	f2m_mult (6, input1, invers1, result1);
+	f2m_print_human(12, result1);	
+	
+	
+	printf("Test2\n");
+	// x^283 + x^12 + x^7 + x^5 +1
+	uint32_t irred2[9] = { 0x10A1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8000000};	
+	// x^191 + x^112 + x^32 + x^30 + x^29 + x^27 + x^26 +x^23 +x^21 +x^18 +x^17 +x^14 +x^13 +x^12 +x^7 +x^6 + x^3 + x^2 +x^1 + 1
+	uint32_t input2[9] = { 0x6CA670CF, 0x1, 0x0, 0x10000, 0x0, 0x80000000, 0x0, 0x0, 0x0};
+	uint32_t invers2[9];
+	f2m_calculateInverse(9, input2, irred2, invers2);
+	
+	uint32_t result2[18];
+    init_zero(18, result1);
+	f2m_mult (18, input2, invers2, result2);
+	// todo reduce result 2
+	//f2m_print_human(18, result2);	
+	
+	printf("Test3\n");
+	// x^409 + x^87 + 1
+	uint32_t irred3[13] = { 0x1, 0x0, 0x800000, 0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0, 0x2000000};	
+	// x^382 + x^224 + x^64 + x^60 + x^58 +x^52 + x^46 + x^42 + x^38 + x^36  +x^34 + x^28 + x^26 + x^14 +x^12 + x^6 + x^4 + x^2 + 1 
+	uint32_t input3[13] = { 0x15005055, 0x14504414, 0x1, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x40000000, 0x0 };
+	uint32_t invers3[13];
+	f2m_calculateInverse(13, input3, irred3, invers3);
+	
+	uint32_t result3[26];
+    init_zero(26, result3);
+	//f2m_mult (26, input3, invers3, result3);
+	// todo reduce result 3
+	//f2m_print_human(26, result3);
+	
+	printf("Tests passed\n");
+}
+
+void bla()
+{
+	uint32_t a[6] = { 0x10116, 0x1, 0x0, 0x10000, 0x0, 0x0 }; 
+	uint32_t b[6] = { 0xC187364A, 0xF135CF4A, 0x36C7CDE1, 0xC96E4F00, 0x89E84495, 0x00000007 }; 
+
+	uint32_t c[12];
+	init_zero(12, c);
+	f2m_mult (6, a, b, c);
+	
+	f2m_print(12,c);
+	f2m_print_human(12, c);	
 }
 
 int main (int argc, const char* argv[] )
@@ -210,4 +286,6 @@ int main (int argc, const char* argv[] )
 	shifttest();
 	multtest();
 	testSquaring();
+	//testInvers();
+	bla();
 }
