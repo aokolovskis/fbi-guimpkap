@@ -16,14 +16,35 @@ void testeqprint(char * testname,uint32_t testnr,uint32_t *t,uint32_t *A,uint32_
     f2m_print(t,A);
     printf("       ");
     f2m_print_human(t,A);
+    printf("\n       ");
+    f2m_print_as_array(t,A);
     printf("\n");
     printf("    B: ");
     f2m_print(t,B);
     printf("       ");
     f2m_print_human(t,B);
+    printf("\n       ");
+    f2m_print_as_array(t,B);
     printf("\n");
   }
 }
+
+void f2m_print_as_array(uint32_t t, uint32_t *A) {
+  int size = t;
+  int i;
+  if (size>0){
+    printf("{");
+    
+    for (i=0;i<size-1;i++){
+      printf("0x%x,",A[i]);
+    }
+    printf("0x%x}",A[size-1]);
+
+  } else {
+    printf("{}");
+  }
+}
+
 
 void euqualstest(){
   uint32_t t = 2;
@@ -119,12 +140,32 @@ void multtest(){
 
   uint32_t j[6] = { 0xA9, 0x100, 0x0, 0x0, 0x0, 0x0 };
   uint32_t k[12] = { 0x4441, 0x0, 0x10000, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0  };
+  uint32_t l[24] = { 0x10101001,0x0,0x0,0x0,0x0,0x00000001,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
+  
+  uint32_t m[12] = {0x15005055, 0x14504414, 0x1, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x40000000 };
+  uint32_t n[24] = {0x11001111,0x1110000,0x10100110,0x1101100,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10000000};
 
+  uint32_t o[2]    = {0xF000000F,0xF000000F};
+  uint32_t r4[4];
+  uint32_t r4_2[4];
+
+  initZero(4,r4);
+  initZero(4,r4_2);
+
+  f2m_mult(2,o,o,r4);
+  f2m_square(2,o,r4_2);
+
+
+  
+  testeqprint("multtest",testnr++,4,r4,r4_2);
 
   uint32_t r1[1]  = {0x0};
   uint32_t r2[2]  = {0x0,0x0};
   uint32_t r12[12] ;
   initZero(12,r12);
+
+  uint32_t r24[24] ;
+  initZero(24,r24);
 
 
 
@@ -156,9 +197,60 @@ void multtest(){
   initZero(12,r12);
 
 
+  f2m_mult (12,k,k, r24);
+  testeqprint("multtest",testnr++,24,l,r24);
+  initZero(24,r24);
+
+  f2m_mult (12,m,m, r24);
+  testeqprint("multtest",testnr++,24,n,r24);
+  initZero(24,r24);
+
+
+  
+
+}
+
+void multvssqrt(){
+	uint32_t *t = (uint32_t *) malloc((1)*sizeof(uint32_t));
+	t[0] = 1;
+
+	int testnr = 0;
+	uint32_t* a = (uint32_t *) malloc((*t)*sizeof(uint32_t));
+	a[0] =  a[0] = 0;
+
+	while (*t < 4){
+		uint32_t* ptr = shiftLeft(t,a,1);
+		if (ptr){
+			free(a);
+			a = ptr;
+		}
+		a[*t-1] =  a[*t-1] ^ 0x1;
+		uint32_t* result_mult   = (uint32_t *) malloc(2*(*t)*sizeof(uint32_t));
+		uint32_t* result_sqrt   = (uint32_t *) malloc(2*(*t)*sizeof(uint32_t));
+		initZero(2*(*t),result_mult);
+		initZero(2*(*t),result_sqrt);
+
+		f2m_mult (*t,a,a, result_mult);
+		f2m_square(*t,a,result_sqrt);
+
+		testeqprint("multvssqrt",testnr++,2*(*t),result_mult,result_sqrt);
+		if (!f2m_is_equal(2*(*t),result_mult,result_sqrt)){
+		    printf("\n    a: ");
+		    f2m_print(*t,a);
+		    printf("       ");
+		    f2m_print_human(*t,a);
+		    printf("\n       ");
+		    f2m_print_as_array(*t,a);
+			break;
+		}
+		free(result_mult);
+		free(result_sqrt);
+	}
+
 
 
 }
+
 
 
 void testSquaring()
@@ -193,9 +285,33 @@ void testSquaring()
 	f2m_square(6, input3, result3);
 	// x^382 + x^224 + x^64 + x^60 + x^58 +x^52 + x^46 + x^42 + x^38 + x^36  +x^34 + x^28 + x^26 + x^14 +x^12 + x^6 + x^4 + x^2 + 1 
 	uint32_t validResult3[12] = { 0x15005055, 0x14504414, 0x1, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x40000000 };
+	
 	assert(f2m_is_equal(12, result3, validResult3));
 	
-	printf("Tests passed\n");
+	uint32_t r24[24];
+	initZero(24,r24);
+	f2m_square(12, validResult3, r24);
+	uint32_t vr24[24]  = {0x11001111,0x1110000,0x10100110,0x1101100,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10000000};
+	
+//	printf("\n validResult");
+//	f2m_print_human(12,validResult3);
+//	f2m_print_as_array(24,r24);
+//	printf("\n");
+//
+//	printf("\n r\n");
+//	f2m_print(24,r24);
+//	printf("\n");
+//	f2m_print_human(24,r24);
+//	printf("\n vr\n");
+//	f2m_print(24,vr24);
+//	printf("\n");
+//	f2m_print_human(24,vr24);
+//	printf("\n");
+	//assert(f2m_is_equal(24,r24,vr24));
+	
+	
+	
+	printf("Tests squaring passed\n");
 }
 
 void testInvers()
@@ -269,8 +385,9 @@ void testInvers()
 void bla()
 {
 	uint32_t a[6] = { 0x10116, 0x1, 0x0, 0x10000, 0x0, 0x0 }; 
+	f2m_print_human(6, a);
 	uint32_t b[6] = { 0xC187364A, 0xF135CF4A, 0x36C7CDE1, 0xC96E4F00, 0x89E84495, 0x00000007 }; 
-
+	f2m_print_human(6, b);
 	uint32_t c[12];
 	init_zero(12, c);
 	f2m_mult (6, a, b, c);
@@ -288,4 +405,5 @@ int main (int argc, const char* argv[] )
 	testSquaring();
 	//testInvers();
 	bla();
+	//multvssqrt();
 }

@@ -424,9 +424,14 @@ void f2m_mult (
        uint32_t working_bit = A[j]&(0x1<<k);
 	 if (working_bit>0){
 	   uint32_t truncated_c_index;
-           
-	   for (truncated_c_index = j;truncated_c_index < t_b_copy; truncated_c_index++){
-	     C[truncated_c_index] =  C[truncated_c_index] ^ B_copy[truncated_c_index-j];
+     //  f2m_print(2*t,C);
+     //  printf("\n");
+     //  f2m_print(t_b_copy,B_copy);
+     //  printf("\n");
+       for (truncated_c_index = j;truncated_c_index < (t_b_copy+j); truncated_c_index++){
+
+	     C[truncated_c_index] = (uint32_t) (C[truncated_c_index] ^ B_copy[truncated_c_index-j]);
+
 	   }
 	  
 	 //	 C{j} := C{j} XOR B
@@ -821,7 +826,7 @@ void f2m_calculateInverse(uint32_t t, uint32_t *A, uint32_t *F, uint32_t *I)
  *   main 
  */
 #ifdef TESTING
-#else 
+#else
 int main(void)
 {	
 	//srand(1);
