@@ -456,6 +456,38 @@ void f2m_mult (
   //RETURN (C)
 }
  
+/*
+* FUNCTION
+*   Reduces the result of a polynomial multiplication
+*
+* INPUT
+*   C as Poly
+*
+* OUTPUT
+*   -
+*
+* DESCRIPTION/REMARKS
+*   C must be a result of a polynomial multiplication (Grade < 2m - 2)
+*/
+void f2m_reduce(uint32_t *C)
+{
+	uint32_t j, t;
+
+	for (j = 10; j > 5; j--)
+	{
+		t = C[j];
+		C[j - 6] = C[j - 6] ^ (t << 29);
+		C[j - 5] = C[j - 5] ^ (t << 4) ^ (t << 3) ^ (t) ^ (t >> 3);
+		C[j - 4] = C[j - 4] ^ (t >> 28) ^ (t >> 29);
+	}
+
+	t = (C[5] >> 3) << 3;
+	C[0] = C[0] ^ (t << 4) ^ (t << 3) ^ (t) ^ (t >> 3);
+	C[1] = C[1] ^ (T >> 28) ^ (t >> 29);
+	C[5] = C[5] & 0x7;
+	return 0;
+}
+
 /* 
  * FUNCTION 
  *   test_ecc_b163
