@@ -712,8 +712,8 @@ uint32_t *yQ
 				bZqPow4[z] = 0x0;
 			}
 			
-			if(d[i] & bitMask == 1)
-			{	
+			if((d[i] & bitMask) != 0)
+			{				
 				// (Xq, Zq) = PADD(xP, Xq, Zq, Xr, Zr)
 				// Xq = xp*(Xr*Zq + Xq*Zr) ^2 + Xq*Zr*Xr*Zq
 				// Zq = (Xr*Zq + Xq*Zr) ^ 2
