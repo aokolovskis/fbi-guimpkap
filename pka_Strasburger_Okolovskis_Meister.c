@@ -664,11 +664,17 @@ uint32_t *yQ
 
 	// helper variables
 	uint32_t t2 = t*2;
+	
+	// PADD (both cases)
 	uint32_t XrZqPLUSXqZr[t];
 	uint32_t XqZr[t2], XrZq[t2], XqZrXrZq[t2], XrZqPLUSXqZrSquared[t2], xpXrZqPLUSXqZrSquared[t2];
+	
+	// PDOUBLE d[i] == 1
 	uint32_t XrSquard[t2], ZrSquard[t2], XrSquardZrSquard[t2], XrPow4[t2], ZrPow4[t2], bZrPow4[t2];
 	
-	// montgomery ladder
+	// PDOUBLE d[i] == 0
+	uint32_t XqSquard[t2], ZqSquard[t2], XqSquardZqSquard[t2], XqPow4[t2], ZqPow4[t2], bZqPow4[t2];
+	
 	int i;
 	for(i = t - 1; i > 0; i--)
 	{
@@ -689,68 +695,41 @@ uint32_t *yQ
 				XrZqPLUSXqZrSquared[z] = 0x0;
 				xpXrZqPLUSXqZrSquared[z] = 0x0;
 				
-				// PDOUBLE
+				// PDOUBLE d[i] == 1
 				XrSquard[z] = 0x0;
 				ZrSquard[z] = 0x0;
 				XrPow4[z] = 0x0;
 				ZrPow4[z] = 0x0;
 				XrSquardZrSquard[z] = 0x0;
 				bZrPow4[z] = 0x0;
+				
+				// PDOUBLE d[i] == 0
+				XqSquard[z] = 0x0;
+				ZqSquard[z] = 0x0;
+				XqPow4[z] = 0x0;
+				ZqPow4[z] = 0x0;
+				XqSquardZqSquard[z] = 0x0;
+				bZqPow4[z] = 0x0;
 			}
 			
 			if(d[i] & bitMask == 1)
 			{	
-				// PADD
+				// (Xq, Zq) = PADD(xP, Xq, Zq, Xr, Zr)
 				// Xq = xp*(Xr*Zq + Xq*Zr) ^2 + Xq*Zr*Xr*Zq
 				// Zq = (Xr*Zq + Xq*Zr) ^ 2
 				
-				/*-------------DEBUGGING-----------------*/
-				printf("\n\nMult: \n");
-				f2m_print_human(t, Xq);
-				printf("\n with \n");
-				f2m_print_human(t, Zr);
-				printf("\nXq*Zr =\n");
-				/*---------------------------------------*/
-				
 				// Xq*Zr, length = t*2			
 				f2m_mult(t, Xq, Zr, XqZr);			
-			
-				/*-------------DEBUGGING-----------------*/
-				f2m_print_human(t2, XqZr);
-				printf("\n");									
-				printf("\n\nMult: \n");
-				f2m_print_human(t, Xr);
-				printf("\nwith \n");
-				f2m_print_human(t, Zq);
-				printf("\nXr*Zq =\n");		
-				/*---------------------------------------*/
-			
+						
 				// Xr*Zq, length = t*2
 				f2m_mult(t, Xr, Zq, XrZq);
-			
-				/*-------------DEBUGGING-----------------*/
-				f2m_print_human(t2, XrZq);
-				printf("\n");
-				/*---------------------------------------*/
-				
+						
 				f2m_reduce(XqZr);
 				f2m_reduce(XrZq);
-
-				/*-------------DEBUGGING-----------------*/
-				printf("\n\nXqZr reduced:\n");
-				f2m_print_human(t, XqZr);
-				printf("\nXrZq reduced:\n");
-				f2m_print_human(t, XrZq);
-				/*---------------------------------------*/
 			                 
 				// XqZr*XrZq, length = t*2
 				f2m_mult(t, XqZr, XrZq, XqZrXrZq);
 				f2m_reduce(XqZrXrZq);
-				
-				/*-------------DEBUGGING-----------------*/
-				printf("\n\nXqZrXrZq reduced:\n");
-				f2m_print_human(t, XqZrXrZq);							
-				/*---------------------------------------*/
 				
 				// (Xr*Zq + Xq*Zr) ^ 2, length = t*2
 				f2m_Add(t, XqZr, XrZq, XrZqPLUSXqZr);
@@ -759,37 +738,15 @@ uint32_t *yQ
 				
 				// Zq result
 				copy(t, XrZqPLUSXqZrSquared, Zq);
-
-				/*-------------DEBUGGING-----------------*/				  
-				printf("\n\nZq result:\n");
-				f2m_print_human(t, Zq);  
-				/*---------------------------------------*/
-				
-				/*-------------DEBUGGING-----------------*/				  
-				printf("\n\nxP :\n");
-				f2m_print_human(t, xP);  
-				/*---------------------------------------*/
 				
 				// xP * (Xr*Zq + Xq*Zr) ^ 2, length = t*2
 				f2m_mult(t, xP, XrZqPLUSXqZrSquared, xpXrZqPLUSXqZrSquared);
 				f2m_reduce(xpXrZqPLUSXqZrSquared);
 				
-				/*-------------DEBUGGING-----------------*/				  
-				printf("\n\nxP * (Xr*Zq + Xq*Zr) ^ 2 :\n");
-				f2m_print_human(t, xpXrZqPLUSXqZrSquared);  
-				/*---------------------------------------*/
-				
 				// (Xr*Zq + Xq*Zr) ^ 2 + XqZr*XrZq = Xq result
 				f2m_Add(t, xpXrZqPLUSXqZrSquared, XqZrXrZq, Xq);
-
-				/*-------------DEBUGGING-----------------*/				  
-				printf("\n\nXq result:\n");
-				f2m_print_human(t, Xq);  
-				system("pause");  
-				/*---------------------------------------*/
 				
-				// PDOUBLE
-
+				// (Xr, Zr) = PDOUBLE (b, Xr, Zr)
 				// Xr = (Xr^2)^2 + b*(Zr^2)^2
 				// Zr = Xr^2 * Zr^2
 
@@ -802,8 +759,8 @@ uint32_t *yQ
 				f2m_reduce(ZrSquard);				
 				
 				// ZrSquard * XrSquard				
-				f2m_ mult(t, XrSquard, ZrSquard, XrSquardZrSquard);
-				fm2_reduce(XrSquardZrSquard);
+				f2m_mult(t, XrSquard, ZrSquard, XrSquardZrSquard);
+				f2m_reduce(XrSquardZrSquard);
 				
 				// Zr result
 				copy(t, XrSquardZrSquard, Zr);
@@ -825,38 +782,77 @@ uint32_t *yQ
 			}
 			else
 			{
-				  // PADD
-				  // Xr = xp(XqZr + XrZq) ^2 + XrZqXqZr
-				  // Zr = (XqZr + XrZq) ^2
+				// (Xr, Zr) = PADD(xP, Xr, Zr, Xq, Zq)
+				// Xr = xp(XqZr + XrZq) ^2 + XrZqXqZr
+				// Zr = (XqZr + XrZq) ^2
 
-				  // 1. temp1 = Xr*Zq
-				  // 2. temp2 = Xq*Zr				
-				  // 3. temp3 = temp1 * temp2
-				  // 4. temp4 = (temp1 + temp2)^2
-				  // 5.  Zq = temp4
-				  // 6. temp5 = xp*temp4
-				  // 7. Xq = temp5 + temp3
+				// Xr*Zq
+				f2m_mult(t, Xr, Zq, XrZq);
+				f2m_reduce(XrZq);
 
-				  // PDOUBLE
+				// Xq*Zr
+				f2m_mult(t, Xq, Zr, XqZr);		
+				f2m_reduce(XqZr);
+								
+				// XqZr*XrZq, length = t*2
+				f2m_mult(t, XqZr, XrZq, XqZrXrZq);
+				f2m_reduce(XqZrXrZq);
+				
+				// (Xr*Zq + Xq*Zr) ^ 2, length = t*2
+				f2m_Add(t, XqZr, XrZq, XrZqPLUSXqZr);
+				f2m_square(t, XrZqPLUSXqZr, XrZqPLUSXqZrSquared);
+				f2m_reduce(XrZqPLUSXqZrSquared);
+				
+				// Zr result
+				copy(t, XrZqPLUSXqZrSquared, Zr);
+				
+				// xP * (Xr*Zq + Xq*Zr) ^ 2, length = t*2
+				f2m_mult(t, xP, XrZqPLUSXqZrSquared, xpXrZqPLUSXqZrSquared);
+				f2m_reduce(xpXrZqPLUSXqZrSquared);
+				
+				// Xr result
+				f2m_Add(t, xpXrZqPLUSXqZrSquared, XqZrXrZq, Xr);
 
-				  // Xq = (Xq^2)^2 + b*(Zq^2)^2
-				  // Zq = Xq^2 * Zq^2
+				// (Xq, Zq) = PDOUBLE (b, Xq, Zq)
+				// Xq = (Xq^2)^2 + b*(Zq^2)^2
+				// Zq = Xq^2 * Zq^2
 
-				  // 1. temp1 = Xq^2
-				  // 2. temp2 = Zq^2
-				  // Zq = temp1 * temp2
-				  // temp3 = temp1^2
-				  // temp4 = temp2^2
-				  // temp5 = b*temp4
-				  // Xq =  temp3 + temp5
+				// Xq^2
+				f2m_square(t, Xq, XqSquard);
+				f2m_reduce(XqSquard);
+				
+				// Zq^2
+				f2m_square(t, Zq, ZqSquard);
+				f2m_reduce(ZqSquard);
+				
+				// Xq^2 * Zq^2 
+				f2m_mult(t, XqSquard, ZqSquard, XqSquardZqSquard);
+				f2m_reduce(XqSquardZqSquard);
+				
+				// Zq result
+				copy(t, XqSquardZqSquard, Zq);
+				
+				// Xq^2 ^2 = Xq ^ 4
+				f2m_square(t, XqSquard, XqPow4);
+				f2m_reduce(XrPow4);
+				
+				// Zq^2 ^2 = Zq ^ 4
+				f2m_square(t, ZqSquard, ZqPow4);
+				f2m_reduce(ZqPow4);
+				
+				// Zq ^ 4 * b
+				f2m_mult(t, b, ZqPow4, bZqPow4);
+				f2m_reduce(bZrPow4);
+				
+				// Xq = Xq^4 + b * Zq^4
+				f2m_Add(t, XqPow4, bZqPow4, Xq);
 			}
 
 			bitMask >>= 1;
 		  }
-	}
-
-	  // xq = Xq // Xq.length might now be > xq.length! 
-	  // TODO Rückrechnung von yq
+	} 
+	
+	// TODO Rückrechnung von yq + xq
 } 
 
 /* 
