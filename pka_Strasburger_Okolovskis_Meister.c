@@ -917,22 +917,22 @@ uint32_t *yQ
 	f2m_mult(t, Xq_ZqInverse_PLUS_xP, term3, term4);
 	f2m_reduce(term4);
 	
-	// (Xq / Zq + xp) *[(Xq / Zq + xp) * (Xr / Zr + xp) + xp^2 + yp] + yp
-	uint32_t term5[t];
-	initZero(t, term5);
-	f2m_Add(t, term4, yP, term5);
-	
 	// xp^-1
 	uint32_t xPInverse[t];
 	initZero(t, xPInverse);
 	f2m_calculateInverse(t, xP, F, xPInverse);
 	
-	// yq result
-	uint32_t result[t2];
-	initZero(t2, result);
-	f2m_mult(t, xPInverse, term5, result);
-	f2m_reduce(result);
-	copy(t, result, yQ);
+	// (Xq / Zq + xp) *[(Xq / Zq + xp) * (Xr / Zr + xp) + xp^2 + yp] * xp^-1
+	uint32_t term5[t2];
+	initZero(t2, term5);
+	f2m_mult(t, xPInverse, term4, term5);
+	f2m_reduce(term5);
+	
+	// (Xq / Zq + xp) *[(Xq / Zq + xp) * (Xr / Zr + xp) + xp^2 + yp] * xp^-1 + yp = yq result
+	uint32_t result[t];
+	initZero(t, result);	
+	f2m_Add(t, term5, yP, result);
+	copy(t, result, yQ);	
 	
 	// TODO Rückrechnung von xq
 } 
