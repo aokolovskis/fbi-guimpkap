@@ -676,7 +676,7 @@ uint32_t *yQ
 	uint32_t XqSquard[t2], ZqSquard[t2], XqSquardZqSquard[t2], XqPow4[t2], ZqPow4[t2], bZqPow4[t2];
 	
 	int i;
-	for(i = t - 1; i > 0; i--)
+	for(i = t - 1; i >= 0; i--)
 	{
 		uint32_t bitMask = 0x80000000;
 		int y;
@@ -850,9 +850,9 @@ uint32_t *yQ
 
 			bitMask >>= 1;
 		}
-	} 
+	} 	
 	
-	// determin yq
+	// determine yq
 	
 	// (Xq / Zq + xp)	
 	// Zq^-1
