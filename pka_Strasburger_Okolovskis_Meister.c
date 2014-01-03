@@ -548,6 +548,13 @@ void f2m_calculateInverse(uint32_t t, uint32_t *A, uint32_t *F, uint32_t *I)
 		one[i] = 0x0;
 	}
 	
+	// in case input poly is zero, return zero
+	if(f2m_is_equal(t, A, zero))
+	{
+		copy(t, zero, I);
+		return;
+	}
+	
 	g1[0] = 0x1;
 	one[0] = 0x1;
 	
@@ -725,7 +732,7 @@ uint32_t *yQ
 				f2m_mult(t, Xr, Zq, XrZq);
 						
 				f2m_reduce(XqZr);
-				f2m_reduce(XrZq);
+				f2m_reduce(XrZq);	
 			                 
 				// XqZr*XrZq, length = t*2
 				f2m_mult(t, XqZr, XrZq, XqZrXrZq);
@@ -736,7 +743,7 @@ uint32_t *yQ
 				f2m_square(t, XrZqPLUSXqZr, XrZqPLUSXqZrSquared);
 				f2m_reduce(XrZqPLUSXqZrSquared);
 				
-				// Zq result
+				// Zq result		
 				copy(t, XrZqPLUSXqZrSquared, Zq);
 				
 				// xP * (Xr*Zq + Xq*Zr) ^ 2, length = t*2
@@ -781,7 +788,7 @@ uint32_t *yQ
 				f2m_Add(t, XrPow4, bZrPow4, Xr);
 			}
 			else
-			{
+			{  
 				// (Xr, Zr) = PADD(xP, Xr, Zr, Xq, Zq)
 				// Xr = xp(XqZr + XrZq) ^2 + XrZqXqZr
 				// Zr = (XqZr + XrZq) ^2
@@ -852,8 +859,6 @@ uint32_t *yQ
 		}
 	} 	
 	
-	// determine yq
-	
 	// (Xq / Zq + xp)	
 	// Zq^-1
 	uint32_t ZqInverse[t];
@@ -865,6 +870,9 @@ uint32_t *yQ
 	initZero(t2, Xq_ZqInverse);
 	f2m_mult(t, Xq, ZqInverse, Xq_ZqInverse);
 	f2m_reduce(Xq_ZqInverse);
+
+	// determine xq
+	copy(t, Xq_ZqInverse, xQ);
 	
 	// Xq / Zq + xP
 	uint32_t Xq_ZqInverse_PLUS_xP[t];
@@ -933,8 +941,6 @@ uint32_t *yQ
 	initZero(t, result);	
 	f2m_Add(t, term5, yP, result);
 	copy(t, result, yQ);	
-	
-	// TODO Rückrechnung von xq
 } 
 
 /* 
