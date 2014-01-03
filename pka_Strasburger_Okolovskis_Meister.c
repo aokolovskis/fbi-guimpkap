@@ -689,10 +689,9 @@ uint32_t *yQ
 		int y;
 		for(y = 31; y >= 0; y--)
 		{
-			initZero(t, XrZqPLUSXqZr);
-		
+			initZero(t, XrZqPLUSXqZr);		
 			// init helper variables
-			uint32_t z;
+			uint32_t z;			
 			for(z = 0; z < t2; z++)
 			{
 				// PADD
@@ -858,87 +857,83 @@ uint32_t *yQ
 			bitMask >>= 1;
 		}
 	} 	
+
+	uint32_t ZqInverse[t], ZrInverse[t], Xq_ZqInverse_PLUS_xP[t], Xr_ZrInverse_PLUS_xP[t], term2[t], term3[t], xPInverse[t], result[t];
+	uint32_t Xq_ZqInverse[t2], Xr_ZrInverse[t2], xPSquared[t2], term1[t2], term4[t2], term5[t2];
 	
+	for(y = 0; y < t; y++)
+	{
+		ZqInverse[y] = 0x0;
+		Xq_ZqInverse_PLUS_xP[y] = 0x0;
+		ZrInverse[y] = 0x0;
+		term2[y] = 0x0;
+		term3[y] = 0x0;
+		xPInverse[y] = 0x0;
+		result[y] = 0x0;
+		Xr_ZrInverse_PLUS_xP[y] = 0x0;
+	}
+	
+	for(y = 0; y < t2; y++)
+	{
+		Xq_ZqInverse[y] = 0x0;
+		Xr_ZrInverse[y] = 0x0;
+		xPSquared[y] = 0x0;
+		term1[y] = 0x0;
+		term4[y] = 0x0;
+		term5[y] = 0x0;
+	}
+		
 	// (Xq / Zq + xp)	
 	// Zq^-1
-	uint32_t ZqInverse[t];
-	initZero(t, ZqInverse);
 	f2m_calculateInverse(t, Zq, F, ZqInverse);
 	
 	// Xq * Zq^-1 = Xq / Zq
-	uint32_t Xq_ZqInverse[t2];
-	initZero(t2, Xq_ZqInverse);
 	f2m_mult(t, Xq, ZqInverse, Xq_ZqInverse);
 	f2m_reduce(Xq_ZqInverse);
 
-	// determine xq
+	// xq
 	copy(t, Xq_ZqInverse, xQ);
 	
 	// Xq / Zq + xP
-	uint32_t Xq_ZqInverse_PLUS_xP[t];
-	initZero(t, Xq_ZqInverse_PLUS_xP);
 	f2m_Add(t, Xq_ZqInverse, xP, Xq_ZqInverse_PLUS_xP);
 	
 	// (Xr / Zr + xp)	
 	// Zr^-1
-	uint32_t ZrInverse[t];
-	initZero(t, ZrInverse);
 	f2m_calculateInverse(t, Zr, F, ZrInverse);
 	
 	// Xr * Zr^-1 = Xr / Zr
-	uint32_t Xr_ZrInverse[t2];
-	initZero(t2, Xr_ZrInverse);
 	f2m_mult(t, Xr, ZrInverse, Xr_ZrInverse);
 	f2m_reduce(Xr_ZrInverse);
 	
 	// Xr / Zr + xP
-	uint32_t Xr_ZrInverse_PLUS_xP[t];
-	initZero(t, Xr_ZrInverse_PLUS_xP);
-	f2m_Add(t, Xr_ZrInverse, xP, Xr_ZrInverse_PLUS_xP);	
-	
+	f2m_Add(t, Xr_ZrInverse, xP, Xr_ZrInverse_PLUS_xP);		
 	
 	// xp^2
-	uint32_t xPSquared[t2];
-	initZero(t2, xPSquared);
 	f2m_square(t, xP, xPSquared);
 	f2m_reduce(xPSquared);
 	
 	// (Xq / Zq + xp) * (Xr / Zr + xp)
-	uint32_t term1[t2];
-	initZero(t2, term1);
 	f2m_mult(t, Xr_ZrInverse_PLUS_xP, Xq_ZqInverse_PLUS_xP, term1);
 	f2m_reduce(term1);
 	
 	// (Xq / Zq + xp) * (Xr / Zr + xp) + xp^2
-	uint32_t term2[t];
-	initZero(t, term2);
 	f2m_Add(t, term1, xPSquared, term2);
 
 	// (Xq / Zq + xp) * (Xr / Zr + xp) + xp^2 + yp
-	uint32_t term3[t];
-	initZero(t, term3);
 	f2m_Add(t, term2, yP, term3);
 	
 	// (Xq / Zq + xp) *[(Xq / Zq + xp) * (Xr / Zr + xp) + xp^2 + yp]
-	uint32_t term4[t2];
-	initZero(t2, term4);
 	f2m_mult(t, Xq_ZqInverse_PLUS_xP, term3, term4);
 	f2m_reduce(term4);
 	
 	// xp^-1
-	uint32_t xPInverse[t];
-	initZero(t, xPInverse);
 	f2m_calculateInverse(t, xP, F, xPInverse);
 	
 	// (Xq / Zq + xp) *[(Xq / Zq + xp) * (Xr / Zr + xp) + xp^2 + yp] * xp^-1
-	uint32_t term5[t2];
-	initZero(t2, term5);
 	f2m_mult(t, xPInverse, term4, term5);
 	f2m_reduce(term5);
 	
 	// (Xq / Zq + xp) *[(Xq / Zq + xp) * (Xr / Zr + xp) + xp^2 + yp] * xp^-1 + yp = yq result
-	uint32_t result[t];
-	initZero(t, result);	
 	f2m_Add(t, term5, yP, result);
 	copy(t, result, yQ);	
 } 
