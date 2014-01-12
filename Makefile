@@ -1,5 +1,5 @@
 all: 
-	gcc pka_Strasburger_Okolovskis_Meister.c -o pka 
+	gcc -O3 pka_Strasburger_Okolovskis_Meister.c -o pka 
 tests: test
 test: 
 	gcc -g -DTESTING=1 pka_Strasburger_Okolovskis_Meister.c test.c -o tests
