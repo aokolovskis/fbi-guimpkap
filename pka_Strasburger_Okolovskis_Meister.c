@@ -689,6 +689,14 @@ uint32_t *yQ
 		int y;
 		for(y = 31; y >= 0; y--)
 		{
+
+			if ((i == t - 1)&& (y == 31)) { // speedup 33%
+				int deg = getDegree(t,d);
+				i = deg / 32; 
+				y = deg - (i * 32); 
+			}
+
+			
 			initZero(t, XrZqPLUSXqZr);		
 			// init helper variables
 			uint32_t z;			
