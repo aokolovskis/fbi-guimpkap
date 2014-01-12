@@ -697,7 +697,7 @@ uint32_t *yQ
 			}
 
 			
-			initZero(t, XrZqPLUSXqZr);		
+			//initZero(t, XrZqPLUSXqZr);		
 			// init helper variables
 			uint32_t z;			
 			for(z = 0; z < t2; z++)
@@ -706,22 +706,22 @@ uint32_t *yQ
 				XqZr[z] = 0x0;
 				XrZq[z] = 0x0;
 				XqZrXrZq[z] = 0x0;
-				XrZqPLUSXqZrSquared[z] = 0x0;
+				//XrZqPLUSXqZrSquared[z] = 0x0;
 				xpXrZqPLUSXqZrSquared[z] = 0x0;
 				
 				// PDOUBLE d[i] == 1
-				XrSquard[z] = 0x0;
-				ZrSquard[z] = 0x0;
-				XrPow4[z] = 0x0;
-				ZrPow4[z] = 0x0;
+				//XrSquard[z] = 0x0;
+				//ZrSquard[z] = 0x0;
+				//XrPow4[z] = 0x0;
+				//ZrPow4[z] = 0x0;
 				XrSquardZrSquard[z] = 0x0;
-				bZrPow4[z] = 0x0;
+				//bZrPow4[z] = 0x0;
 				
 				// PDOUBLE d[i] == 0
-				XqSquard[z] = 0x0;
-				ZqSquard[z] = 0x0;
-				XqPow4[z] = 0x0;
-				ZqPow4[z] = 0x0;
+				//XqSquard[z] = 0x0;
+				//ZqSquard[z] = 0x0;
+				//XqPow4[z] = 0x0;
+				//ZqPow4[z] = 0x0;
 				XqSquardZqSquard[z] = 0x0;
 				bZqPow4[z] = 0x0;
 			}
@@ -872,12 +872,12 @@ uint32_t *yQ
 	for(y = 0; y < t; y++)
 	{
 		ZqInverse[y] = 0x0;
-		Xq_ZqInverse_PLUS_xP[y] = 0x0;
+		//Xq_ZqInverse_PLUS_xP[y] = 0x0;
 		ZrInverse[y] = 0x0;
-		term2[y] = 0x0;
-		term3[y] = 0x0;
+		//term2[y] = 0x0;
+		//term3[y] = 0x0;
 		xPInverse[y] = 0x0;
-		result[y] = 0x0;
+		//result[y] = 0x0;
 		Xr_ZrInverse_PLUS_xP[y] = 0x0;
 	}
 	
@@ -885,7 +885,7 @@ uint32_t *yQ
 	{
 		Xq_ZqInverse[y] = 0x0;
 		Xr_ZrInverse[y] = 0x0;
-		xPSquared[y] = 0x0;
+		//xPSquared[y] = 0x0;
 		term1[y] = 0x0;
 		term4[y] = 0x0;
 		term5[y] = 0x0;
