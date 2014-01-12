@@ -715,7 +715,7 @@ uint32_t *yQ
 				//XrPow4[z] = 0x0;
 				//ZrPow4[z] = 0x0;
 				XrSquardZrSquard[z] = 0x0;
-				//bZrPow4[z] = 0x0;
+				bZrPow4[z] = 0x0;
 				
 				// PDOUBLE d[i] == 0
 				//XqSquard[z] = 0x0;
