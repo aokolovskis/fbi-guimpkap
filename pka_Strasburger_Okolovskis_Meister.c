@@ -878,7 +878,7 @@ uint32_t *yQ
 		//term3[y] = 0x0;
 		xPInverse[y] = 0x0;
 		//result[y] = 0x0;
-		Xr_ZrInverse_PLUS_xP[y] = 0x0;
+		//Xr_ZrInverse_PLUS_xP[y] = 0x0;
 	}
 	
 	for(y = 0; y < t2; y++)
