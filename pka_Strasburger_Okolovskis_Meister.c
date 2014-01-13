@@ -869,17 +869,17 @@ uint32_t *yQ
 	uint32_t ZqInverse[t], ZrInverse[t], Xq_ZqInverse_PLUS_xP[t], Xr_ZrInverse_PLUS_xP[t], term2[t], term3[t], xPInverse[t], result[t];
 	uint32_t Xq_ZqInverse[t2], Xr_ZrInverse[t2], xPSquared[t2], term1[t2], term4[t2], term5[t2];
 	
-	for(y = 0; y < t; y++)
-	{
-		ZqInverse[y] = 0x0;
+	//for(y = 0; y < t; y++)
+	//{
+		//ZqInverse[y] = 0x0;
 		//Xq_ZqInverse_PLUS_xP[y] = 0x0;
-		ZrInverse[y] = 0x0;
+		//ZrInverse[y] = 0x0;
 		//term2[y] = 0x0;
 		//term3[y] = 0x0;
-		xPInverse[y] = 0x0;
+		//xPInverse[y] = 0x0;
 		//result[y] = 0x0;
 		//Xr_ZrInverse_PLUS_xP[y] = 0x0;
-	}
+	//}
 	
 	for(y = 0; y < t2; y++)
 	{
